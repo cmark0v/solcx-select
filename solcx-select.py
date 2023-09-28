@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import types
 import solcx
 from os import getenv
 import sys
@@ -6,7 +7,6 @@ from dotenv import load_dotenv
 from os import system
 
 load_dotenv()
-SOLC_VERSION = getenv("SOLC_VERSION", False)
 SOLC_VERSION = getenv("SOLC_VERSION", False)
 
 
@@ -37,8 +37,8 @@ alias_set = ["set", "use"]
 
 afunz = dir(solcx)
 funz = []
-for f in funz:
-    if type(getattr(solcx, f)) == function:
+for f in afunz:
+    if isinstance(getattr(solcx, f), types.FunctionType):
         funz.append(f)
 
 
@@ -52,11 +52,12 @@ def help():
         "\n",
     )
 
-    print(str(alias_install, " - installs version","\n"))
-    print(str(alias_v, " - display current version [default] ","\n"))
-    print(str(alias_ls, " - show versions available","\n"))
-    print(str(alias_set, "  - set version","\n"))
-    print("others: ",funz,"\n")
+    print(str(alias_install), " - installs version", "\n")
+    print(str(alias_v), " - display current version [default] ", "\n")
+    print(str(alias_ls), " - show versions available", "\n")
+    print(str(alias_set), "  - set version", "\n")
+    print("others: ", funz, "\n")
+
 
 if len(argvx) > 0:
     cmd = argvx[0].lower()
@@ -73,11 +74,11 @@ if len(argvx) > 0:
     elif cmd in alias_ls:
         print(solcx.get_installed_solc_versions())
     elif cmd in alias_set:
-        setsolc(argvx[2])
+        setsolc(argvx[1])
     elif cmd in afunz:
         f = getattr(solcx, cmd, lambda x: "what is %s" % (cmd,))
         if len(argvx) >= 2:
-            print(f(argvx[2]))
+            print(f(argvx[1]))
         else:
             print(f([]))
     else:
