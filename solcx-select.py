@@ -8,18 +8,18 @@ from os import system
 
 load_dotenv()
 SOLC_VERSION = getenv("SOLC_VERSION", False)
+SOLC_PATH = getenv("SOLC_PATH", getenv("HOME", "~") + "/.local/bin")
 
 
 def setsolc(v):
     try:
-        try:
-            solcx.set_solc_version(v)
-        except:
-            solcx.install_solc(v)
-            solcx.set_solc_version(v)
-        o = system("ln -sf $HOME/.solcx/solc-v%s $HOME/.local/bin/solc" % (v,))
+        solcx.set_solc_version(v)
+        path = solcx.get_solcx_install_folder()
+        o = system("ln -sf %s/solc-v%s %s/solc" % (path, v, SOLC_PATH))
         if o == 0:
-            print("version set to ", v, "symlink in .local/bin/solc")
+            print("version set to ", v, "symlink in %s/solc" % (SOLC_PATH,))
+        else:
+            print("symlink %s/solc failed with nonzero exit status" % (SOLC_PATH,))
     except Exception as e:
         print(e)
         print("using ", solcx.get_solc_version())
@@ -32,14 +32,25 @@ if SOLC_VERSION:
 argvx = sys.argv[1::]
 alias_install = ["install", "add"]
 alias_v = ["show", "version", "get"]
-alias_ls = ["ls", "versions", "available"]
+alias_ls = ["ls", "versions", "installed"]
 alias_set = ["set", "use"]
+alias_get_solcx_path = ["path", "solcx_path"]
+alias_ls_installable = ["bin", "installable", "lsbin", "available"]
+alias_solc_path = ["link","solc_path"]
 
-afunz = dir(solcx)
-funz = []
-for f in afunz:
-    if isinstance(getattr(solcx, f), types.FunctionType):
-        funz.append(f)
+funz = [
+    "compile_solc",
+    "get_compilable_solc_versions",
+    "get_installable_solc_versions",
+    "get_installed_solc_versions",
+    "get_solc_version",
+    "get_solcx_install_folder",
+    "import_installed_solc",
+    "install_solc",
+    "install_solc_pragma",
+    "set_solc_version",
+    "set_solc_version_pragma",
+]
 
 
 def help():
@@ -48,14 +59,18 @@ def help():
         "solcx-select adds version of solc selected by solcx to your shell path", "\n"
     )
     print(
-        "if no args provided, it will link to version declared by env var SOLC_VERSION",
+        "if SOLC_VERSION is set, it will link to this version before processing other args",
         "\n",
     )
 
-    print(str(alias_install), " - installs version", "\n")
-    print(str(alias_v), " - display current version [default] ", "\n")
-    print(str(alias_ls), " - show versions available", "\n")
+    print(str(alias_install), " - installs version(s) supplied", "\n")
+    print(str(alias_v), " - display current version", "\n")
+    print(str(alias_ls), " - show versions installed/available", "\n")
     print(str(alias_set), "  - set version", "\n")
+    print(str(alias_get_solcx_path), "  - get path to solcx binaries", "\n")
+    print(str(alias_ls_installable), "  - list versuions available to install", "\n")
+    print(str(alias_solc_path), "  - path to solc symlink, set by env var SOLC_PATH defaulting to ~/.local/bin", "\n")
+    
     print("others: ", funz, "\n")
 
 
@@ -72,10 +87,18 @@ if len(argvx) > 0:
     elif cmd in alias_v:
         print(solcx.get_solc_version())
     elif cmd in alias_ls:
-        print(solcx.get_installed_solc_versions())
+        for ve in solcx.get_installed_solc_versions():
+            print(str(ve))
+    elif cmd in alias_ls_installable:
+        for ve in solcx.get_installable_solc_versions():
+            print(str(ve))
     elif cmd in alias_set:
         setsolc(argvx[1])
-    elif cmd in afunz:
+    elif cmd in alias_get_solcx_path:
+        print(str(solcx.get_solcx_install_folder()))
+    elif cmd in alias_solc_path:
+        print(SOLC_PATH)
+    elif cmd in funz:
         f = getattr(solcx, cmd, lambda x: "what is %s" % (cmd,))
         if len(argvx) >= 2:
             print(f(argvx[1]))
