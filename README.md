@@ -1,5 +1,5 @@
 # solcx-select
-cli wrapper solcx
+cli wrapper for py-solc-x
 
 manages solcx from unix command line a la solc-selector
 
