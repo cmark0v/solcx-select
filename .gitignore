@@ -1,0 +1,3 @@
+dist/
+solcx_select/__*
+solcx_select.egg-info

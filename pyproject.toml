@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solcx-select"
+dynamic=["version","keywords","description","license","dependencies","scripts"]
+authors = [
+  { name="c mark0v", email="cmark0v@protonmail.com" },
+]
+readme = "README.md"
+requires-python = ">=3.6"
