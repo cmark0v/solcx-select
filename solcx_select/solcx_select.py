@@ -25,6 +25,28 @@ def setsolc(v):
         print("using ", solcx.get_solc_version())
 
 
+def pragma_parse(file):
+    fp = open(file, "r")
+    dat = fp.readlines()
+    for d in dat[0:5]:
+        if "pragma" in d:
+            return d
+
+
+def pragma_equip(file):
+    pragma = pragma_parse(file)
+    try:
+        print(pragma)
+        solcx.set_solc_version_pragma(pragma)
+        print("using ", solcx.get_solc_version())
+    except:
+        print("installing")
+        solcx.install_solc_pragma(pragma)
+        print("installed")
+        solcx.set_solc_version_pragma(pragma)
+        print("using ", solcx.get_solc_version())
+
+
 alias_latest = ["latest"]
 alias_install = ["install", "add"]
 alias_v = ["show", "version", "get", "using"]
@@ -34,7 +56,8 @@ alias_get_solcx_path = ["solcx_path", "which"]
 alias_ls_installable = ["bin", "installable", "lsbin", "available", "list"]
 alias_solc_path = ["link", "solc_path", "path"]
 alias_compile = ["build", "compile"]
-alias_compileable = ["sources", "compileable", "buildable", "src"]
+alias_compilable = ["sources", "compilable", "buildable", "src"]
+alias_pragma = ["pragma", "equip", "for"]
 funz = [
     "compile_solc",
     "get_compilable_solc_versions",
@@ -55,7 +78,7 @@ def help():
         "solcx-select adds version of solc selected by solcx to your shell path", "\n"
     )
     print(
-        "if SOLC_VERSION is set, it will link to this version before processing other args",
+        "if SOLC_VERSION is set, it will set this version if given no other command",
         "\n",
     )
 
@@ -63,8 +86,15 @@ def help():
     print(str(alias_v), " - display current version")
     print(str(alias_ls), " - show versions installed/available")
     print(str(alias_set), "  - set version")
+    print(
+        str(alias_pragma),
+        "  <file.sol>",
+        " read pragma from contract, set compliant version as specified, install if needed",
+    )
+    print(str(alias_compilable), "  - get list of compilable versions")
+    print(str(alias_compile), "  - install from source")
     print(str(alias_get_solcx_path), "  - get path to solcx binaries")
-    print(str(alias_ls_installable), "  - list versuions available to install")
+    print(str(alias_ls_installable), "  - list versions available to install")
     print(
         str(alias_solc_path),
         "  - path to solc symlink, set by env var SOLC_PATH defaulting to ~/.local/bin",
@@ -98,11 +128,13 @@ def main():
             print(str(solcx.get_solcx_install_folder()))
         elif cmd in alias_solc_path:
             print(SOLC_PATH)
+        elif cmd in alias_pragma:
+            pragma_equip(argvx[1])
         elif cmd in alias_compile:
             for a in argvx[1::]:
                 print("compiling...,", a)
                 solcx.compile_solc(a)
-        elif cmd in alias_compileable:
+        elif cmd in alias_compilable:
             for ve in solcx.get_compilable_solc_versions():
                 print(getattr(ve, "base_version", str(ve)))
         elif cmd in alias_latest:
